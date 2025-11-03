@@ -80,22 +80,34 @@ def header(
                     me.icon(icon="info_outline")
             
             if show_logout_button:
-                with (
-                    me.content_button(
-                        type="icon",
-                        on_click=on_logout_click,
+                me.link(
+                    text="Logout",
+                    url="/api/logout?redirect=/login",
+                    open_in_new_tab=False,
+                    style=me.Style(
+                        text_decoration="none",
+                        color=me.theme_var("on-surface"),
                     ),
-                    me.tooltip(message="Logout"),
-                ):
-                    me.icon(icon="logout")
+                )
 
 def on_logout_click(e: me.ClickEvent):
     """Handle logout button click."""
-    from state.state import logout_user
-    from config.default import Default
-    
-    cfg = Default()
-    if cfg.SIMPLE_AUTH_ENABLED:
-        logout_user()
-        me.navigate("/login")
+    try:
+        from state.state import logout_user
+        from config.default import Default
+
+        cfg = Default()
+        if cfg.SIMPLE_AUTH_ENABLED:
+            # Best-effort: log out and navigate, but suppress any UI errors
+            try:
+                logout_user()
+            except Exception:
+                pass
+            try:
+                me.navigate("/login")
+            except Exception:
+                pass
+            yield
+    except Exception:
+        # Swallow any unexpected errors to avoid error dialogs
         yield
