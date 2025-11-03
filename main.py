@@ -218,6 +218,14 @@ async def logout():
     return response
 
 
+@app.get("/api/logout")
+async def logout_get(redirect: str = "/login"):
+    """Handle logout via GET and redirect to the given page."""
+    response = RedirectResponse(url=redirect, status_code=302)
+    response.delete_cookie(key="auth_token", httponly=True, samesite="Lax")
+    return response
+
+
 @app.middleware("http")
 async def add_global_csp(request: Request, call_next):
     response = await call_next(request)
